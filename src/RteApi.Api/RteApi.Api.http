@@ -1,0 +1,6 @@
+@RteApi.Api_HostAddress = http://localhost:0
+
+GET {{RteApi.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
