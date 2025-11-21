@@ -74,8 +74,8 @@ The system includes the following entities:
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/YOUR_USERNAME/rte-api.git
-   cd rte-api
+   git clone https://github.com/omerahat/evente-api
+   cd evente-api
    ```
 
 2. **Update Database Connection**
