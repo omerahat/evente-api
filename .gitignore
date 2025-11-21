@@ -417,4 +417,6 @@ logs/
 *.sqlite
 *.sqlite3
 
+# Project planning files
 IMPLEMENTATION_PLAN.md
+
