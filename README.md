@@ -7,12 +7,12 @@ A robust .NET 9 Web API for managing events, user registrations, reviews, and ga
 This project follows **Clean Architecture** with clear separation of concerns:
 
 ```
-RteApi/
+EventeApi/
 ├── src/
-│   ├── RteApi.Core/          # Domain Layer (Entities, Interfaces, DTOs, Enums)
-│   ├── RteApi.Infrastructure/ # Data Layer (DbContext, Services, Security)
-│   └── RteApi.Api/           # Presentation Layer (Controllers, Middleware)
-└── RteApi.sln
+│   ├── EventeApi.Core/          # Domain Layer (Entities, Interfaces, DTOs, Enums)
+│   ├── EventeApi.Infrastructure/ # Data Layer (DbContext, Services, Security)
+│   └── EventeApi.Api/           # Presentation Layer (Controllers, Middleware)
+└── EventeApi.sln
 ```
 
 ## 🚀 Tech Stack
@@ -80,10 +80,10 @@ The system includes the following entities:
 
 2. **Update Database Connection**
    
-   Edit `src/RteApi.Api/appsettings.json`:
+   Edit `src/EventeApi.Api/appsettings.json`:
    ```json
    "ConnectionStrings": {
-     "DefaultConnection": "Host=localhost;Port=5432;Database=rte_db;Username=YOUR_USER;Password=YOUR_PASSWORD"
+     "DefaultConnection": "Host=localhost;Port=5432;Database=evente_db;Username=YOUR_USER;Password=YOUR_PASSWORD"
    }
    ```
 
@@ -93,8 +93,8 @@ The system includes the following entities:
    ```json
    "Jwt": {
      "Key": "YOUR_SUPER_SECRET_KEY_HERE_AT_LEAST_32_CHARACTERS",
-     "Issuer": "RteApi",
-     "Audience": "RteApiUser",
+     "Issuer": "EventeApi",
+     "Audience": "EventeApiUser",
      "ExpiryMinutes": "60"
    }
    ```
@@ -107,12 +107,12 @@ The system includes the following entities:
 5. **Apply Database Migrations**
    ```bash
    dotnet tool restore
-   dotnet ef database update -p src/RteApi.Infrastructure -s src/RteApi.Api
+   dotnet ef database update -p src/EventeApi.Infrastructure -s src/EventeApi.Api
    ```
 
 6. **Run the API**
    ```bash
-   dotnet run --project src/RteApi.Api
+   dotnet run --project src/EventeApi.Api
    ```
 
    The API will start at: `http://localhost:5052`
@@ -132,13 +132,13 @@ Once running, navigate to:
    ```
    This creates:
    - A "Tech" category
-   - Admin user: `admin@rte.com` / `Admin123!`
+   - Admin user: `admin@evente.com` / `Admin123!`
 
 2. **Login as Admin**
    ```bash
    curl -X POST http://localhost:5052/api/auth/login \
       -H "Content-Type: application/json" \
-      -d '{"email": "admin@rte.com", "password": "Admin123!"}'
+      -d '{"email": "admin@evente.com", "password": "Admin123!"}'
    ```
    Copy the returned `token`.
 
@@ -231,12 +231,12 @@ The API supports configuration through `appsettings.json` or environment variabl
 ```json
 {
   "ConnectionStrings": {
-    "DefaultConnection": "Host=localhost;Port=5432;Database=rte_db;..."
+    "DefaultConnection": "Host=localhost;Port=5432;Database=evente_db;..."
   },
   "Jwt": {
     "Key": "your-secret-key-min-32-chars",
-    "Issuer": "RteApi",
-    "Audience": "RteApiUser",
+    "Issuer": "EventeApi",
+    "Audience": "EventeApiUser",
     "ExpiryMinutes": "60"
   }
 }
@@ -259,27 +259,27 @@ EXPOSE 80
 
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
-COPY ["src/RteApi.Api/RteApi.Api.csproj", "RteApi.Api/"]
-COPY ["src/RteApi.Infrastructure/RteApi.Infrastructure.csproj", "RteApi.Infrastructure/"]
-COPY ["src/RteApi.Core/RteApi.Core.csproj", "RteApi.Core/"]
-RUN dotnet restore "RteApi.Api/RteApi.Api.csproj"
+COPY ["src/EventeApi.Api/EventeApi.Api.csproj", "EventeApi.Api/"]
+COPY ["src/EventeApi.Infrastructure/EventeApi.Infrastructure.csproj", "EventeApi.Infrastructure/"]
+COPY ["src/EventeApi.Core/EventeApi.Core.csproj", "EventeApi.Core/"]
+RUN dotnet restore "EventeApi.Api/EventeApi.Api.csproj"
 COPY src/ .
-WORKDIR "/src/RteApi.Api"
-RUN dotnet build "RteApi.Api.csproj" -c Release -o /app/build
+WORKDIR "/src/EventeApi.Api"
+RUN dotnet build "EventeApi.Api.csproj" -c Release -o /app/build
 
 FROM build AS publish
-RUN dotnet publish "RteApi.Api.csproj" -c Release -o /app/publish
+RUN dotnet publish "EventeApi.Api.csproj" -c Release -o /app/publish
 
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "RteApi.Api.dll"]
+ENTRYPOINT ["dotnet", "EventeApi.Api.dll"]
 ```
 
 Build and run:
 ```bash
-docker build -t rte-api .
-docker run -p 5052:80 -e ConnectionStrings__DefaultConnection="Host=host.docker.internal;..." rte-api
+docker build -t evente-api .
+docker run -p 5052:80 -e ConnectionStrings__DefaultConnection="Host=host.docker.internal;..." evente-api
 ```
 
 ### Cloud Platforms
@@ -351,8 +351,8 @@ app.UseCors("AllowFlutterApp");
 
 ### Adding a New Migration
 ```bash
-dotnet ef migrations add MigrationName -p src/RteApi.Infrastructure -s src/RteApi.Api
-dotnet ef database update -p src/RteApi.Infrastructure -s src/RteApi.Api
+dotnet ef migrations add MigrationName -p src/EventeApi.Infrastructure -s src/EventeApi.Api
+dotnet ef database update -p src/EventeApi.Infrastructure -s src/EventeApi.Api
 ```
 
 ### Running Tests
@@ -363,7 +363,7 @@ dotnet test
 
 ### Hot Reload
 ```bash
-cd src/RteApi.Api
+cd src/EventeApi.Api
 dotnet watch
 ```
 
@@ -377,12 +377,12 @@ lsof -ti:5052 | xargs kill -9
 ### Database Connection Issues
 - Verify PostgreSQL is running: `pg_isready`
 - Check connection string in `appsettings.json`
-- Ensure database exists: `psql -U postgres -c "CREATE DATABASE rte_db;"`
+- Ensure database exists: `psql -U postgres -c "CREATE DATABASE evente_db;"`
 
 ### Migration Errors
 ```bash
-dotnet ef database drop -p src/RteApi.Infrastructure -s src/RteApi.Api --force
-dotnet ef database update -p src/RteApi.Infrastructure -s src/RteApi.Api
+dotnet ef database drop -p src/EventeApi.Infrastructure -s src/EventeApi.Api --force
+dotnet ef database update -p src/EventeApi.Infrastructure -s src/EventeApi.Api
 ```
 
 ## 📝 License
