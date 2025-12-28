@@ -1,6 +1,8 @@
-# Event Scoring & Analysis System - Backend API
+# Evente - Event Management & Registration System 
 
-A robust .NET 9 Web API for managing events, user registrations, reviews, and gamification through badges. Built with Clean Architecture principles and designed to serve both mobile (Flutter) and web applications.
+A robust, full-stack .NET 9 solution for managing events, user registrations, reviews, and gamification. This project includes a high-performance **Backend API** and a modern **Admin Panel (Website)** built with ASP.NET Core MVC.
+
+Designed with **Clean Architecture** principles to serve mobile apps (Flutter) and web clients.
 
 ## 🏗️ Architecture
 
@@ -11,12 +13,14 @@ EventeApi/
 ├── src/
 │   ├── EventeApi.Core/          # Domain Layer (Entities, Interfaces, DTOs, Enums)
 │   ├── EventeApi.Infrastructure/ # Data Layer (DbContext, Services, Security)
-│   └── EventeApi.Api/           # Presentation Layer (Controllers, Middleware)
+│   ├── EventeApi.Api/           # Backend API (Controllers, Middleware)
+│   └── EventeApi.Web/           # Frontend Admin Panel (MVC, Refit Client)
 └── EventeApi.sln
 ```
 
 ## 🚀 Tech Stack
 
+### Backend (API)
 - **.NET 9** - Latest ASP.NET Core Web API
 - **Entity Framework Core 9** - ORM with Code-First approach
 - **PostgreSQL** - Primary database
@@ -26,42 +30,35 @@ EventeApi/
 - **FluentValidation** - Input validation
 - **Serilog** - Structured logging
 
+### Frontend (Admin Panel)
+- **ASP.NET Core MVC** - Server-side rendering
+- **Bootstrap 5** - Responsive UI framework
+- **Refit** - Type-safe HTTP client for API communication
+- **Cookie Authentication** - Secure session management
+- **Clean UI** - Modern dashboard design
+
 ## 📋 Features
 
-### Authentication & Authorization
-- ✅ JWT-based authentication
+### 🔐 Authentication & Authorization
+- ✅ JWT-based authentication (API)
+- ✅ Cookie-based authentication (Web)
 - ✅ Role-based authorization (User, Admin)
-- ✅ BCrypt password hashing
-- ✅ Support for social logins (Google/Apple - placeholders ready)
+- ✅ Secure password hashing
+- ✅ Support for social logins (Google/Apple ready)
 
-### Core Features
-- ✅ **Event Management** - CRUD operations for events with categories
-- ✅ **Event Registration** - Users can register/unregister for events
-- ✅ **Event Reviews** - Rating system (1-5 stars) with comments
-- ✅ **Badge System** - Gamification with user achievements
+### 📱 Core Features (API)
+- ✅ **Event Management** - Create, read, update, delete events
+- ✅ **Registration System** - Users join/leave events
+- ✅ **Review System** - 5-star ratings with comments
+- ✅ **Gamification** - Badge system for user achievements
+- ✅ **Geolocation** - Latitude/Longitude support for maps
 
-### Admin Features
-- ✅ **Dashboard Metrics** - System-wide statistics
-- ✅ **User Management** - Ban/unban users
-- ✅ **Badge Management** - Create and assign badges
-- ✅ **Event Moderation** - Full CRUD control
-
-### Quality & Robustness
-- ✅ Global exception handling
-- ✅ Input validation pipeline
-- ✅ Structured logging (Console + File)
-- ✅ Swagger UI with JWT support
-
-## 🗄️ Database Schema
-
-The system includes the following entities:
-- **Users** - User accounts with role-based access
-- **Categories** - Event categorization
-- **Events** - Event details with location (lat/lon for MapKit)
-- **EventRegistrations** - Many-to-many relationship (Users ↔ Events)
-- **EventReviews** - User feedback with ratings
-- **Badges** - Achievement types
-- **UserBadges** - Earned badges per user
+### 💻 Admin Panel (Website)
+- ✅ **Dashboard** - Real-time metrics (Total Users, Events, Reviews)
+- ✅ **User Management** - View, ban, and unban users
+- ✅ **Event Moderation** - Full CRUD control over events
+- ✅ **Review Management** - Monitor and delete user reviews
+- ✅ **Secure Login** - Dedicated admin authentication flow
 
 ## 🛠️ Getting Started
 
@@ -70,232 +67,137 @@ The system includes the following entities:
 - [PostgreSQL](https://www.postgresql.org/download/) (v12+)
 - A code editor (Visual Studio, Rider, or VS Code)
 
-### Installation
+### 1. Clone the Repository
+```bash
+git clone https://github.com/omerahat/evente-api
+cd evente-api
+```
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/omerahat/evente-api
-   cd evente-api
-   ```
+### 2. Database Setup
+Update `src/EventeApi.Api/appsettings.json` with your PostgreSQL connection string:
+```json
+"ConnectionStrings": {
+  "DefaultConnection": "Host=localhost;Port=5432;Database=evente_db;Username=YOUR_USER;Password=YOUR_PASSWORD"
+}
+```
 
-2. **Update Database Connection**
-   
-   Edit `src/EventeApi.Api/appsettings.json`:
-   ```json
-   "ConnectionStrings": {
-     "DefaultConnection": "Host=localhost;Port=5432;Database=evente_db;Username=YOUR_USER;Password=YOUR_PASSWORD"
-   }
-   ```
+Apply migrations:
+```bash
+dotnet tool restore
+dotnet ef database update -p src/EventeApi.Infrastructure -s src/EventeApi.Api
+```
 
-3. **Update JWT Secret**
-   
-   In `appsettings.json`, change the JWT Key to a strong secret:
-   ```json
-   "Jwt": {
-     "Key": "YOUR_SUPER_SECRET_KEY_HERE_AT_LEAST_32_CHARACTERS",
-     "Issuer": "EventeApi",
-     "Audience": "EventeApiUser",
-     "ExpiryMinutes": "60"
-   }
-   ```
+### 3. Run the Backend API
+Open a terminal and run:
+```bash
+cd src/EventeApi.Api
+dotnet run
+```
+*The API will start at: `http://localhost:5200`*
 
-4. **Restore Dependencies**
-   ```bash
-   dotnet restore
-   ```
+### 4. Seed Initial Data (Important!)
+To create demo data (users, events, reviews), run this command while the API is running:
+```bash
+curl http://localhost:5200/seed-test-data
+```
+This creates:
+- **Admin User**: `admin@evente.com` / `admin123`
+- **Test Users**:
+  - `test@evente.com` / `test123`
+  - `alice@example.com` / `password123`
+  - `bob@example.com` / `password123`
+  - `charlie@example.com` / `password123`
+  - `diana@example.com` / `password123`
+- **4 Categories**: Tech, Music, Sports, Business
+- **6 Sample Events** with registrations and reviews
 
-5. **Apply Database Migrations**
-   ```bash
-   dotnet tool restore
-   dotnet ef database update -p src/EventeApi.Infrastructure -s src/EventeApi.Api
-   ```
+### 5. Run the Admin Panel (Website)
+Open a **new terminal** and run:
+```bash
+cd src/EventeApi.Web
+dotnet run
+```
+*The Website will start at: `http://localhost:5048`*
 
-6. **Run the API**
-   ```bash
-   dotnet run --project src/EventeApi.Api
-   ```
+## 🖥️ Using the Admin Panel
 
-   The API will start at: `http://localhost:5052`
+1. Open your browser to **http://localhost:5048**
+2. Login with the admin credentials:
+   - **Email:** `admin@evente.com`
+   - **Password:** `admin123`
+3. You will be redirected to the **Dashboard**.
+
+### Dashboard Features
+- **Overview**: See total users, events, and activity.
+- **Users**: Manage user accounts. Ban suspicious users.
+- **Events**: Create new events, edit existing ones, or remove them.
+- **Reviews**: Moderation tools for user feedback.
 
 ## 📚 API Documentation
 
 ### Swagger UI
-Once running, navigate to:
-- **Swagger UI**: `http://localhost:5052/swagger`
-- **OpenAPI JSON**: `http://localhost:5052/swagger/v1/swagger.json`
+When the API is running, navigate to:
+- **Swagger UI**: `http://localhost:5200/swagger`
+- **OpenAPI JSON**: `http://localhost:5200/swagger/v1/swagger.json`
 
-### Quick Start - Testing the API
+### API Endpoints Overview
 
-1. **Seed Initial Data** (Development Only)
-   ```bash
-   curl http://localhost:5052/seed-test-data
-   ```
-   This creates:
-   - A "Tech" category
-   - Admin user: `admin@evente.com` / `Admin123!`
-
-2. **Login as Admin**
-   ```bash
-   curl -X POST http://localhost:5052/api/auth/login \
-      -H "Content-Type: application/json" \
-      -d '{"email": "admin@evente.com", "password": "Admin123!"}'
-   ```
-   Copy the returned `token`.
-
-3. **Create an Event**
-   ```bash
-   curl -X POST http://localhost:5052/api/events \
-      -H "Authorization: Bearer YOUR_TOKEN" \
-      -H "Content-Type: application/json" \
-      -d '{
-            "title": "Tech Summit 2025",
-            "description": "Annual technology conference",
-            "organizerName": "Tech Corp",
-            "eventTime": "2025-12-10T09:00:00Z",
-            "locationName": "San Francisco Convention Center",
-            "categoryId": 1
-          }'
-   ```
-
-## 🔐 Authentication
-
-All protected endpoints require a JWT token in the Authorization header:
-```
-Authorization: Bearer YOUR_JWT_TOKEN
-```
-
-### Roles
-- **User** - Can view events, register, and leave reviews
-- **Admin** - Full access including event creation, user management, and moderation
-
-## 📡 API Endpoints
-
-### Auth
 | Method | Endpoint | Description | Auth |
 |--------|----------|-------------|------|
-| POST | `/api/auth/register` | Register new user | None |
-| POST | `/api/auth/login` | Login and get token | None |
-
-### Events
-| Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
-| GET | `/api/events` | Get all events | None |
-| GET | `/api/events/{id}` | Get event by ID | None |
+| **Auth** |
+| POST | `/api/auth/register` | Register new user | Public |
+| POST | `/api/auth/login` | Login and get token | Public |
+| **Events** |
+| GET | `/api/events` | Get all events | Public |
+| GET | `/api/events/{id}` | Get event by ID | Public |
 | POST | `/api/events` | Create event | Admin |
 | PUT | `/api/events/{id}` | Update event | Admin |
 | DELETE | `/api/events/{id}` | Delete event | Admin |
-
-### Registrations
-| Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
+| **Registrations** |
 | POST | `/api/registrations/{eventId}` | Register for event | User |
 | DELETE | `/api/registrations/{eventId}` | Cancel registration | User |
 | GET | `/api/registrations/my` | My registrations | User |
-
-### Reviews
-| Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
-| GET | `/api/reviews/event/{eventId}` | Get event reviews | None |
+| **Reviews** |
+| GET | `/api/reviews/event/{eventId}` | Get event reviews | Public |
 | POST | `/api/reviews` | Add review | User |
-
-### Admin
-| Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
+| **Admin** |
 | GET | `/api/admin/dashboard` | System metrics | Admin |
 | GET | `/api/admin/users` | List all users | Admin |
 | POST | `/api/admin/users/{id}/ban` | Ban user | Admin |
 | POST | `/api/admin/users/{id}/unban` | Unban user | Admin |
-| GET | `/api/admin/badges` | List badges | Admin |
-| POST | `/api/admin/badges` | Create badge | Admin |
 | POST | `/api/admin/badges/assign` | Assign badge to user | Admin |
 
 ## 🧪 Testing with Postman
 
 1. Import the OpenAPI definition:
    - Click **Import** in Postman
-   - Use URL: `http://localhost:5052/swagger/v1/swagger.json`
+   - Use URL: `http://localhost:5200/swagger/v1/swagger.json`
    
 2. Set up environment:
-   - Create variable `baseUrl` = `http://localhost:5052`
+   - Create variable `baseUrl` = `http://localhost:5200`
    
 3. Authenticate:
    - Run the Login request
    - Copy the token
    - Set it at Collection level (Authorization tab)
 
-## 🔧 Configuration
-
-### Environment Variables
-The API supports configuration through `appsettings.json` or environment variables:
-
-```json
-{
-  "ConnectionStrings": {
-    "DefaultConnection": "Host=localhost;Port=5432;Database=evente_db;..."
-  },
-  "Jwt": {
-    "Key": "your-secret-key-min-32-chars",
-    "Issuer": "EventeApi",
-    "Audience": "EventeApiUser",
-    "ExpiryMinutes": "60"
-  }
-}
-```
-
-### Logging
-Logs are written to:
-- **Console** - Structured JSON output
-- **File** - `logs/log-YYYYMMDD.txt` (rolling daily)
-
-## 🚢 Deployment
-
-### Docker (Recommended)
-Create a `Dockerfile` in the project root:
-
-```dockerfile
-FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS base
-WORKDIR /app
-EXPOSE 80
-
-FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
-WORKDIR /src
-COPY ["src/EventeApi.Api/EventeApi.Api.csproj", "EventeApi.Api/"]
-COPY ["src/EventeApi.Infrastructure/EventeApi.Infrastructure.csproj", "EventeApi.Infrastructure/"]
-COPY ["src/EventeApi.Core/EventeApi.Core.csproj", "EventeApi.Core/"]
-RUN dotnet restore "EventeApi.Api/EventeApi.Api.csproj"
-COPY src/ .
-WORKDIR "/src/EventeApi.Api"
-RUN dotnet build "EventeApi.Api.csproj" -c Release -o /app/build
-
-FROM build AS publish
-RUN dotnet publish "EventeApi.Api.csproj" -c Release -o /app/publish
-
-FROM base AS final
-WORKDIR /app
-COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "EventeApi.Api.dll"]
-```
-
-Build and run:
-```bash
-docker build -t evente-api .
-docker run -p 5052:80 -e ConnectionStrings__DefaultConnection="Host=host.docker.internal;..." evente-api
-```
-
-### Cloud Platforms
-- **Azure App Service** - Native .NET support
-- **AWS Elastic Beanstalk** - .NET workloads
-- **Railway / Render** - Easy deployment with PostgreSQL
-
 ## 📱 Client Integration
+
+### iOS/Mobile Setup
+See [IOS_SETUP.md](IOS_SETUP.md) for detailed instructions on connecting your iOS app to this backend.
 
 ### Flutter Example
 ```dart
-// HTTP Service
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+
 class ApiService {
-  final String baseUrl = 'http://localhost:5052';
+  // For iOS Simulator: use localhost
+  // For Physical Device: use your Mac's IP (e.g., 192.168.1.100)
+  final String baseUrl = 'http://localhost:5200';
   String? _token;
 
+  // Login
   Future<void> login(String email, String password) async {
     final response = await http.post(
       Uri.parse('$baseUrl/api/auth/login'),
@@ -310,99 +212,161 @@ class ApiService {
     }
   }
 
-  Future<List<Event>> getEvents() async {
+  // Get all events
+  Future<List<dynamic>> getEvents() async {
     final response = await http.get(
       Uri.parse('$baseUrl/api/events'),
       headers: {'Authorization': 'Bearer $_token'},
     );
-    // Parse and return events
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    }
+    throw Exception('Failed to load events');
+  }
+
+  // Register for an event - eventId goes in URL path, NOT in body
+  Future<void> registerForEvent(int eventId) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/api/registrations/$eventId'),  // ✅ Correct: eventId in URL
+      headers: {
+        'Authorization': 'Bearer $_token',
+        'Content-Type': 'application/json',
+      },
+    );
+    if (response.statusCode != 200) {
+      throw Exception('Failed to register for event');
+    }
+  }
+
+  // Cancel registration
+  Future<void> cancelRegistration(int eventId) async {
+    final response = await http.delete(
+      Uri.parse('$baseUrl/api/registrations/$eventId'),
+      headers: {'Authorization': 'Bearer $_token'},
+    );
+    if (response.statusCode != 204) {
+      throw Exception('Failed to cancel registration');
+    }
+  }
+
+  // Get my registrations
+  Future<List<dynamic>> getMyRegistrations() async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/api/registrations/my'),
+      headers: {'Authorization': 'Bearer $_token'},
+    );
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    }
+    throw Exception('Failed to load registrations');
+  }
+
+  // Add a review
+  Future<void> addReview(int eventId, int rating, String? comment) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/api/reviews'),
+      headers: {
+        'Authorization': 'Bearer $_token',
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({
+        'eventId': eventId,
+        'rating': rating,
+        'commentText': comment,
+      }),
+    );
+    if (response.statusCode != 200) {
+      throw Exception('Failed to add review');
+    }
   }
 }
 ```
 
-## 🛡️ Security Considerations
+### Dio (Flutter) Example
+```dart
+import 'package:dio/dio.dart';
 
-### Before Production
-1. **Change JWT Secret** - Use a strong, random key (min 32 characters)
-2. **Remove Seed Endpoint** - Delete `/seed-test-data` or protect it
-3. **HTTPS Only** - Configure SSL certificates
-4. **CORS Policy** - Add specific origins instead of allowing all
-5. **Rate Limiting** - Implement to prevent abuse
-6. **User Secrets** - Use `dotnet user-secrets` for sensitive data
+class ApiService {
+  final Dio _dio = Dio(BaseOptions(
+    baseUrl: 'http://localhost:5200',  // Use your Mac's IP for physical devices
+    headers: {'Content-Type': 'application/json'},
+  ));
+  
+  String? _token;
 
-### Add CORS (if needed for web clients)
-In `Program.cs`, add:
-```csharp
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowFlutterApp", policy =>
-    {
-        policy.WithOrigins("http://localhost:3000") // Your Flutter Web URL
-              .AllowAnyHeader()
-              .AllowAnyMethod();
+  void setToken(String token) {
+    _token = token;
+    _dio.options.headers['Authorization'] = 'Bearer $token';
+  }
+
+  Future<void> login(String email, String password) async {
+    final response = await _dio.post('/api/auth/login', data: {
+      'email': email,
+      'password': password,
     });
-});
+    setToken(response.data['token']);
+  }
 
-// Then use it:
-app.UseCors("AllowFlutterApp");
+  Future<List<dynamic>> getEvents() async {
+    final response = await _dio.get('/api/events');
+    return response.data;
+  }
+
+  // ⚠️ IMPORTANT: eventId must be in URL path, NOT in request body
+  Future<void> registerForEvent(int eventId) async {
+    await _dio.post('/api/registrations/$eventId');  // ✅ Correct
+    // ❌ Wrong: await _dio.post('/api/registrations', data: {'eventId': eventId});
+  }
+}
 ```
 
-## 📖 Development Guide
+## 🔧 Configuration
 
-### Adding a New Migration
+### API Configuration (`appsettings.json`)
+```json
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "Host=localhost;Port=5432;Database=evente_db;..."
+  },
+  "Jwt": {
+    "Key": "your-secret-key-min-32-chars",
+    "Issuer": "EventeApi",
+    "Audience": "EventeApiUser",
+    "ExpiryMinutes": "60"
+  }
+}
+```
+
+### Web Configuration (`appsettings.json`)
+Ensure the Web App knows where the API is running:
+```json
+{
+  "ApiBaseUrl": "http://localhost:5200"
+}
+```
+
+## 🚢 Deployment (Docker)
+
+Create a `Dockerfile` to build both services or deploy them independently.
+
+**Run API with Docker:**
 ```bash
-dotnet ef migrations add MigrationName -p src/EventeApi.Infrastructure -s src/EventeApi.Api
-dotnet ef database update -p src/EventeApi.Infrastructure -s src/EventeApi.Api
+docker build -t evente-api -f src/EventeApi.Api/Dockerfile .
+docker run -p 5200:80 evente-api
 ```
 
-### Running Tests
-```bash
-dotnet test
-```
-*(Note: Test projects not yet created - add xUnit/NUnit projects as needed)*
+## 🤝 Contributing
 
-### Hot Reload
-```bash
-cd src/EventeApi.Api
-dotnet watch
-```
-
-## 🐛 Troubleshooting
-
-### Port Already in Use
-```bash
-lsof -ti:5052 | xargs kill -9
-```
-
-### Database Connection Issues
-- Verify PostgreSQL is running: `pg_isready`
-- Check connection string in `appsettings.json`
-- Ensure database exists: `psql -U postgres -c "CREATE DATABASE evente_db;"`
-
-### Migration Errors
-```bash
-dotnet ef database drop -p src/EventeApi.Infrastructure -s src/EventeApi.Api --force
-dotnet ef database update -p src/EventeApi.Infrastructure -s src/EventeApi.Api
-```
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit changes (`git commit -m 'Add AmazingFeature'`)
+4. Push to branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
 ## 📝 License
 
 This project is licensed under the MIT License.
 
-## 👥 Contributing
-
-Contributions are welcome! Please:
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-## 📧 Contact
-
-For questions or support, please open an issue on GitHub.
-
 ---
 
 **Built with ❤️ using .NET 9 and Clean Architecture**
-
