@@ -63,8 +63,17 @@
                     </div>
 
                     <div class="mb-3">
-                        <label asp-for="CategoryId" class="form-label">Category ID</label>
-                        <input asp-for="CategoryId" class="form-control" placeholder="Category ID" />
+                        <label asp-for="CategoryId" class="form-label">Category</label>
+                        <select asp-for="CategoryId" class="form-control">
+                            <option value="">-- Select a Category --</option>
+                            @if (ViewBag.Categories != null)
+                            {
+                                @foreach (var category in (IEnumerable<EventeApi.Core.DTOs.CategoryDto>)ViewBag.Categories)
+                                {
+                                    <option value="@category.Id">@category.Name</option>
+                                }
+                            }
+                        </select>
                         <span asp-validation-for="CategoryId" class="text-danger small"></span>
                     </div>
                 </div>

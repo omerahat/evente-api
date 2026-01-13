@@ -65,6 +65,10 @@ public interface IBackendApi
     [Delete("/api/events/{id}")]
     Task<ApiResponse<object>> DeleteEventAsync(int id);
 
+    // Categories Endpoints
+    [Get("/api/categories")]
+    Task<ApiResponse<IEnumerable<CategoryDto>>> GetCategoriesAsync();
+
     // Registrations Endpoints
     [Get("/api/registrations/my")]
     Task<ApiResponse<IEnumerable<EventRegistrationDto>>> GetMyRegistrationsAsync();

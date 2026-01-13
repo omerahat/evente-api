@@ -43,6 +43,12 @@ public record EventDto(
     string? BannerImageUrl
 );
 
+// Category DTOs
+public record CategoryDto(
+    int Id,
+    string Name
+);
+
 // Registration DTOs
 public record EventRegistrationDto(
     int Id,

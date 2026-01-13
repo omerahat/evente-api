@@ -75,8 +75,9 @@ public class EventsController : Controller
     }
 
     [HttpGet]
-    public IActionResult Create()
+    public async Task<IActionResult> Create()
     {
+        await LoadCategoriesAsync();
         return View();
     }
 
@@ -86,6 +87,7 @@ public class EventsController : Controller
     {
         if (!ModelState.IsValid)
         {
+            await LoadCategoriesAsync();
             return View(model);
         }
 
@@ -100,18 +102,21 @@ public class EventsController : Controller
             }
 
             TempData["Error"] = "Failed to create event.";
+            await LoadCategoriesAsync();
             return View(model);
         }
         catch (ApiException ex)
         {
             _logger.LogError(ex, "API error while creating event");
             TempData["Error"] = "Failed to create event.";
+            await LoadCategoriesAsync();
             return View(model);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Unexpected error while creating event");
             TempData["Error"] = "An unexpected error occurred.";
+            await LoadCategoriesAsync();
             return View(model);
         }
     }
@@ -125,6 +130,7 @@ public class EventsController : Controller
 
             if (response.IsSuccessStatusCode && response.Content != null)
             {
+                await LoadCategoriesAsync();
                 return View(response.Content);
             }
 
@@ -151,7 +157,32 @@ public class EventsController : Controller
     {
         if (!ModelState.IsValid)
         {
-            return View(model);
+            await LoadCategoriesAsync();
+            // Fetch the current event to convert UpdateEventDto to EventDto for the view
+            var eventResponse = await _backendApi.GetEventByIdAsync(id);
+            if (eventResponse.IsSuccessStatusCode && eventResponse.Content != null)
+            {
+                var eventDto = eventResponse.Content;
+                var updatedEventDto = new EventDto(
+                    eventDto.Id,
+                    model.Title ?? eventDto.Title,
+                    model.Description ?? eventDto.Description,
+                    model.OrganizerName ?? eventDto.OrganizerName,
+                    model.EventTime ?? eventDto.EventTime,
+                    model.LocationName ?? eventDto.LocationName,
+                    model.LocationLat ?? eventDto.LocationLat,
+                    model.LocationLon ?? eventDto.LocationLon,
+                    model.CategoryId ?? eventDto.CategoryId,
+                    eventDto.CategoryName,
+                    eventDto.CreatedByAdminId,
+                    eventDto.CreatedAt,
+                    model.BannerImageUrl ?? eventDto.BannerImageUrl
+                );
+                return View(updatedEventDto);
+            }
+            // If we can't fetch the event, redirect to index
+            TempData["Error"] = "Failed to load event for editing.";
+            return RedirectToAction(nameof(Index));
         }
 
         try
@@ -165,19 +196,19 @@ public class EventsController : Controller
             }
 
             TempData["Error"] = "Failed to update event.";
-            return View(model);
+            return RedirectToAction(nameof(Edit), new { id });
         }
         catch (ApiException ex)
         {
             _logger.LogError(ex, "API error while updating event {EventId}", id);
             TempData["Error"] = "Failed to update event.";
-            return View(model);
+            return RedirectToAction(nameof(Edit), new { id });
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Unexpected error while updating event {EventId}", id);
             TempData["Error"] = "An unexpected error occurred.";
-            return View(model);
+            return RedirectToAction(nameof(Edit), new { id });
         }
     }
 
@@ -254,6 +285,32 @@ public class EventsController : Controller
         {
             _logger.LogError(ex, "Unexpected error while uploading image");
             return Json(new { success = false, errorMessage = "An unexpected error occurred." });
+        }
+    }
+
+    private async Task LoadCategoriesAsync()
+    {
+        try
+        {
+            var response = await _backendApi.GetCategoriesAsync();
+            if (response.IsSuccessStatusCode && response.Content != null)
+            {
+                ViewBag.Categories = response.Content;
+            }
+            else
+            {
+                ViewBag.Categories = new List<CategoryDto>();
+            }
+        }
+        catch (ApiException ex)
+        {
+            _logger.LogError(ex, "API error while fetching categories");
+            ViewBag.Categories = new List<CategoryDto>();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error while fetching categories");
+            ViewBag.Categories = new List<CategoryDto>();
         }
     }
 }
