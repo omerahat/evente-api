@@ -211,5 +211,50 @@ public class EventsController : Controller
 
         return RedirectToAction(nameof(Index));
     }
+
+    /// <summary>
+    /// Upload an event banner image via AJAX
+    /// </summary>
+    [HttpPost]
+    public async Task<IActionResult> UploadImage(IFormFile file)
+    {
+        if (file == null || file.Length == 0)
+        {
+            return Json(new { success = false, errorMessage = "No file provided." });
+        }
+
+        try
+        {
+            // Convert IFormFile to StreamPart for Refit
+            using var stream = file.OpenReadStream();
+            var streamPart = new StreamPart(stream, file.FileName, file.ContentType);
+            
+            var response = await _backendApi.UploadEventImageAsync(streamPart);
+
+            if (response.IsSuccessStatusCode && response.Content != null)
+            {
+                return Json(new 
+                { 
+                    success = response.Content.Success, 
+                    url = response.Content.Url,
+                    fileName = response.Content.FileName,
+                    fileSize = response.Content.FileSize,
+                    errorMessage = response.Content.ErrorMessage
+                });
+            }
+
+            return Json(new { success = false, errorMessage = "Upload failed. Please try again." });
+        }
+        catch (ApiException ex)
+        {
+            _logger.LogError(ex, "API error while uploading image");
+            return Json(new { success = false, errorMessage = "Upload failed. Please try again." });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error while uploading image");
+            return Json(new { success = false, errorMessage = "An unexpected error occurred." });
+        }
+    }
 }
 

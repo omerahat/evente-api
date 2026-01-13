@@ -12,7 +12,7 @@
 
 <div class="card shadow">
     <div class="card-body">
-        <form asp-action="Edit" asp-route-id="@Model.Id" method="post">
+        <form asp-action="Edit" asp-route-id="@Model.Id" method="post" enctype="multipart/form-data">
             @Html.AntiForgeryToken()
             <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
 
@@ -64,6 +64,58 @@
                 </div>
             </div>
 
+            <!-- Banner Image Upload Section -->
+            <div class="row mt-3">
+                <div class="col-12">
+                    <div class="card bg-light">
+                        <div class="card-body">
+                            <h5 class="card-title"><i class="bi bi-image"></i> Banner Image</h5>
+                            
+                            @if (!string.IsNullOrEmpty(Model.BannerImageUrl))
+                            {
+                                <div class="mb-3" id="currentImageSection">
+                                    <label class="form-label">Current Banner Image</label>
+                                    <div class="border rounded p-2 bg-white">
+                                        <img src="@Model.BannerImageUrl" class="img-fluid rounded" style="max-height: 200px;" alt="Current Banner" id="currentImage" />
+                                        <div class="mt-2">
+                                            <small class="text-muted">@Model.BannerImageUrl</small>
+                                            <button type="button" class="btn btn-sm btn-outline-danger ms-2" id="removeCurrent">
+                                                <i class="bi bi-trash"></i> Remove
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+
+                            <div class="mb-3">
+                                <label for="BannerImage" class="form-label">Upload New Banner Image (Optional)</label>
+                                <div class="upload-area border border-2 border-dashed rounded p-4 text-center" id="dropZone">
+                                    <input type="file" name="BannerImage" id="BannerImage" class="form-control d-none" accept=".jpg,.jpeg,.png,.gif,.webp" />
+                                    <div id="uploadPlaceholder">
+                                        <i class="bi bi-cloud-upload display-4 text-muted"></i>
+                                        <p class="text-muted mb-0">Drag & drop an image here, or click to select</p>
+                                        <small class="text-muted">Supported: JPG, PNG, GIF, WebP (Max 5MB)</small>
+                                    </div>
+                                    <div id="imagePreviewContainer" class="d-none">
+                                        <img id="imagePreview" class="img-fluid rounded" style="max-height: 200px;" alt="Preview" />
+                                        <br />
+                                        <button type="button" class="btn btn-sm btn-outline-danger mt-2" id="removeImage">
+                                            <i class="bi bi-trash"></i> Remove New
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="progress mt-2 d-none" id="uploadProgress">
+                                    <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
+                                </div>
+                                <small class="text-danger" id="imageError"></small>
+                            </div>
+                            <input type="hidden" name="BannerImageUrl" id="BannerImageUrl" value="@Model.BannerImageUrl" />
+                            <input type="hidden" name="RemoveBannerImage" id="RemoveBannerImage" value="false" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="mt-3">
                 <button type="submit" class="btn btn-warning">
                     <i class="bi bi-save"></i> Update Event
@@ -78,5 +130,160 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.3/jquery.validate.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validation-unobtrusive/3.2.12/jquery.validate.unobtrusive.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            const dropZone = $('#dropZone');
+            const fileInput = $('#BannerImage');
+            const imagePreview = $('#imagePreview');
+            const previewContainer = $('#imagePreviewContainer');
+            const placeholder = $('#uploadPlaceholder');
+            const bannerUrlInput = $('#BannerImageUrl');
+            const imageError = $('#imageError');
+            const progressBar = $('#uploadProgress');
+            const removeBannerInput = $('#RemoveBannerImage');
+            const maxFileSize = 5 * 1024 * 1024; // 5MB
+            const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+
+            // Click to upload
+            dropZone.on('click', function(e) {
+                if (e.target.id !== 'removeImage' && !$(e.target).closest('#removeImage').length) {
+                    fileInput.click();
+                }
+            });
+
+            // Drag and drop events
+            dropZone.on('dragover', function(e) {
+                e.preventDefault();
+                dropZone.addClass('border-primary bg-light');
+            });
+
+            dropZone.on('dragleave', function(e) {
+                e.preventDefault();
+                dropZone.removeClass('border-primary bg-light');
+            });
+
+            dropZone.on('drop', function(e) {
+                e.preventDefault();
+                dropZone.removeClass('border-primary bg-light');
+                const files = e.originalEvent.dataTransfer.files;
+                if (files.length > 0) {
+                    handleFile(files[0]);
+                }
+            });
+
+            // File input change
+            fileInput.on('change', function() {
+                if (this.files.length > 0) {
+                    handleFile(this.files[0]);
+                }
+            });
+
+            // Remove new image preview
+            $('#removeImage').on('click', function(e) {
+                e.stopPropagation();
+                fileInput.val('');
+                previewContainer.addClass('d-none');
+                placeholder.removeClass('d-none');
+                imageError.text('');
+                // Restore original URL if current image exists
+                var currentImg = $('#currentImage');
+                if (currentImg.length && !$('#currentImageSection').hasClass('d-none')) {
+                    bannerUrlInput.val(currentImg.attr('src'));
+                }
+            });
+
+            // Remove current image
+            $('#removeCurrent').on('click', function(e) {
+                e.preventDefault();
+                $('#currentImageSection').addClass('d-none');
+                bannerUrlInput.val('');
+                removeBannerInput.val('true');
+            });
+
+            function handleFile(file) {
+                imageError.text('');
+                
+                // Validate file type
+                if (!allowedTypes.includes(file.type)) {
+                    imageError.text('Invalid file type. Please upload JPG, PNG, GIF, or WebP.');
+                    return;
+                }
+
+                // Validate file size
+                if (file.size > maxFileSize) {
+                    imageError.text('File size exceeds 5MB limit.');
+                    return;
+                }
+
+                // Show preview
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    imagePreview.attr('src', e.target.result);
+                    placeholder.addClass('d-none');
+                    previewContainer.removeClass('d-none');
+                };
+                reader.readAsDataURL(file);
+
+                // Upload the file
+                uploadImage(file);
+            }
+
+            function uploadImage(file) {
+                const formData = new FormData();
+                formData.append('file', file);
+
+                progressBar.removeClass('d-none');
+                progressBar.find('.progress-bar').css('width', '0%');
+
+                $.ajax({
+                    url: '@Url.Action("UploadImage", "Events")',
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    xhr: function() {
+                        const xhr = new window.XMLHttpRequest();
+                        xhr.upload.addEventListener('progress', function(e) {
+                            if (e.lengthComputable) {
+                                const percent = (e.loaded / e.total) * 100;
+                                progressBar.find('.progress-bar').css('width', percent + '%');
+                            }
+                        });
+                        return xhr;
+                    },
+                    success: function(response) {
+                        progressBar.addClass('d-none');
+                        if (response.success && response.url) {
+                            bannerUrlInput.val(response.url);
+                            removeBannerInput.val('false');
+                        } else {
+                            imageError.text(response.errorMessage || 'Upload failed. Please try again.');
+                            previewContainer.addClass('d-none');
+                            placeholder.removeClass('d-none');
+                        }
+                    },
+                    error: function(xhr) {
+                        progressBar.addClass('d-none');
+                        imageError.text('Upload failed. Please try again.');
+                        previewContainer.addClass('d-none');
+                        placeholder.removeClass('d-none');
+                    }
+                });
+            }
+        });
+    </script>
+    <style>
+        .upload-area {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .upload-area:hover {
+            border-color: #0d6efd !important;
+            background-color: #f8f9fa;
+        }
+        .border-dashed {
+            border-style: dashed !important;
+        }
+    </style>
 }
 

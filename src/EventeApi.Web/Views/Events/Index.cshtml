@@ -21,6 +21,7 @@
                     <thead class="table-light">
                         <tr>
                             <th>ID</th>
+                            <th style="width: 80px;">Banner</th>
                             <th>Title</th>
                             <th>Organizer</th>
                             <th>Event Time</th>
@@ -35,6 +36,16 @@
                         {
                             <tr>
                                 <td>@evt.Id</td>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(evt.BannerImageUrl))
+                                    {
+                                        <img src="@evt.BannerImageUrl" alt="Banner" class="img-thumbnail" style="max-width: 60px; max-height: 40px; object-fit: cover;" />
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted small"><i class="bi bi-image"></i></span>
+                                    }
+                                </td>
                                 <td>@evt.Title</td>
                                 <td>@evt.OrganizerName</td>
                                 <td>@evt.EventTime.ToString("yyyy-MM-dd HH:mm")</td>

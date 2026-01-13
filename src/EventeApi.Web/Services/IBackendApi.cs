@@ -1,5 +1,6 @@
 using Refit;
 using EventeApi.Core.DTOs;
+using Microsoft.AspNetCore.Http;
 
 namespace EventeApi.Web.Services;
 
@@ -35,6 +36,18 @@ public interface IBackendApi
 
     [Post("/api/admin/badges/assign")]
     Task<ApiResponse<object>> AssignBadgeAsync([Body] AssignBadgeDto assignment);
+
+    // Image Upload Endpoints
+    [Multipart]
+    [Post("/api/admin/upload/event-image")]
+    Task<ApiResponse<ImageUploadResponseDto>> UploadEventImageAsync([AliasAs("file")] StreamPart file);
+
+    [Multipart]
+    [Post("/api/admin/upload/event-images")]
+    Task<ApiResponse<IEnumerable<ImageUploadResponseDto>>> UploadEventImagesAsync([AliasAs("files")] IEnumerable<StreamPart> files);
+
+    [Delete("/api/admin/upload/image")]
+    Task<ApiResponse<object>> DeleteImageAsync([Query] string imageUrl);
 
     // Events Endpoints
     [Get("/api/events")]

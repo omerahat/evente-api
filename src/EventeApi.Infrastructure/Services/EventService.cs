@@ -52,6 +52,7 @@ public class EventService : IEventService
             LocationLat = dto.LocationLat,
             LocationLon = dto.LocationLon,
             CategoryId = dto.CategoryId,
+            BannerImageUrl = dto.BannerImageUrl,
             CreatedByAdminId = adminId,
             CreatedAt = DateTime.UtcNow
         };
@@ -78,6 +79,7 @@ public class EventService : IEventService
         if (dto.LocationLat.HasValue) entity.LocationLat = dto.LocationLat;
         if (dto.LocationLon.HasValue) entity.LocationLon = dto.LocationLon;
         if (dto.CategoryId.HasValue) entity.CategoryId = dto.CategoryId;
+        if (dto.BannerImageUrl != null) entity.BannerImageUrl = dto.BannerImageUrl;
 
         await _context.SaveChangesAsync();
 
@@ -110,7 +112,8 @@ public class EventService : IEventService
             e.CategoryId,
             e.Category?.Name,
             e.CreatedByAdminId,
-            e.CreatedAt
+            e.CreatedAt,
+            e.BannerImageUrl
         );
     }
 }

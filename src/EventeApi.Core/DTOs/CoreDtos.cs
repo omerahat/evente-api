@@ -11,7 +11,8 @@ public record CreateEventDto(
     string LocationName,
     decimal? LocationLat,
     decimal? LocationLon,
-    int CategoryId
+    int CategoryId,
+    string? BannerImageUrl = null
 );
 
 public record UpdateEventDto(
@@ -22,7 +23,8 @@ public record UpdateEventDto(
     string? LocationName,
     decimal? LocationLat,
     decimal? LocationLon,
-    int? CategoryId
+    int? CategoryId,
+    string? BannerImageUrl = null
 );
 
 public record EventDto(
@@ -37,7 +39,8 @@ public record EventDto(
     int? CategoryId,
     string? CategoryName,
     int? CreatedByAdminId,
-    DateTime CreatedAt
+    DateTime CreatedAt,
+    string? BannerImageUrl
 );
 
 // Registration DTOs
@@ -63,5 +66,22 @@ public record ReviewDto(
     int Rating,
     string? CommentText,
     DateTime CreatedAt
+);
+
+// Image Upload DTOs
+public record ImageUploadResponseDto(
+    bool Success,
+    string? Url,
+    string? FileName,
+    long FileSize,
+    string? ErrorMessage = null
+);
+
+public record ImageMetadataDto(
+    string FileName,
+    string Url,
+    long FileSize,
+    string ContentType,
+    DateTime UploadedAt
 );
 

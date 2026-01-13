@@ -71,6 +71,7 @@ public class AppDbContext : DbContext
             entity.Property(e => e.LocationName).HasColumnName("location_name").IsRequired().HasMaxLength(255);
             entity.Property(e => e.LocationLat).HasColumnName("location_lat").HasColumnType("decimal(10,8)");
             entity.Property(e => e.LocationLon).HasColumnName("location_lon").HasColumnType("decimal(11,8)");
+            entity.Property(e => e.BannerImageUrl).HasColumnName("banner_image_url").HasMaxLength(500);
             entity.Property(e => e.CategoryId).HasColumnName("category_id");
             entity.Property(e => e.CreatedByAdminId).HasColumnName("created_by_admin_id");
             entity.Property(e => e.CreatedAt).HasColumnName("created_at").HasDefaultValueSql("CURRENT_TIMESTAMP");

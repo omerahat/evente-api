@@ -17,6 +17,13 @@
 
 <div class="card shadow">
     <div class="card-body">
+        @if (!string.IsNullOrEmpty(Model.BannerImageUrl))
+        {
+            <div class="mb-4">
+                <img src="@Model.BannerImageUrl" alt="Event Banner" class="img-fluid rounded shadow-sm" style="max-height: 300px; width: 100%; object-fit: cover;" />
+            </div>
+        }
+
         <div class="row">
             <div class="col-md-6">
                 <dl class="row">
@@ -61,6 +68,18 @@
 
                     <dt class="col-sm-4">Created At</dt>
                     <dd class="col-sm-8">@Model.CreatedAt.ToString("MMMM dd, yyyy HH:mm")</dd>
+
+                    <dt class="col-sm-4">Banner Image</dt>
+                    <dd class="col-sm-8">
+                        @if (!string.IsNullOrEmpty(Model.BannerImageUrl))
+                        {
+                            <a href="@Model.BannerImageUrl" target="_blank" class="text-break">@Model.BannerImageUrl</a>
+                        }
+                        else
+                        {
+                            <span class="text-muted">No banner image</span>
+                        }
+                    </dd>
                 </dl>
             </div>
         </div>

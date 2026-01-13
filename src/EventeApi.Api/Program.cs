@@ -39,6 +39,7 @@ builder.Services.AddScoped<IRegistrationService, RegistrationService>();
 builder.Services.AddScoped<IReviewService, ReviewService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IBadgeService, BadgeService>();
+builder.Services.AddScoped<IImageUploadService, ImageUploadService>();
 
 // Validation
 builder.Services.AddFluentValidationAutoValidation();
@@ -122,6 +123,9 @@ var app = builder.Build();
 
 // Global Exception Handling Middleware
 app.UseMiddleware<GlobalExceptionMiddleware>();
+
+// Enable serving static files (for uploaded images)
+app.UseStaticFiles();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

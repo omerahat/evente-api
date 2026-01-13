@@ -1,0 +1,97 @@
+### Test Banner Image URL Functionality
+
+@baseUrl = http://localhost:5200
+@adminEmail = admin@evente.com
+@adminPassword = Admin123!@
+@adminToken =
+
+### Step 1: Login as Admin (or Register if needed)
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{adminEmail}}",
+  "password": "{{adminPassword}}"
+}
+
+@adminToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+
+###
+
+### Step 2: Create an Event WITH banner image URL
+POST {{baseUrl}}/api/events
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "title": "Summer Music Festival 2025",
+  "description": "A fantastic summer music festival featuring local and international artists",
+  "organizerName": "Event Productions Inc",
+  "eventTime": "2025-07-15T18:00:00Z",
+  "locationName": "Central Park, New York",
+  "locationLat": 40.7829,
+  "locationLon": -73.9654,
+  "categoryId": 1,
+  "bannerImageUrl": "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=1200&h=400"
+}
+
+###
+
+### Step 3: Get all events (should include bannerImageUrl)
+GET {{baseUrl}}/api/events
+Accept: application/json
+
+###
+
+### Step 4: Get specific event by ID (should include bannerImageUrl)
+GET {{baseUrl}}/api/events/1
+Accept: application/json
+
+###
+
+### Step 5: Update event WITH new banner image URL
+PUT {{baseUrl}}/api/events/1
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "title": "Summer Music Festival 2025 - Updated",
+  "bannerImageUrl": "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=1200&h=400"
+}
+
+###
+
+### Step 6: Update event to REMOVE banner image (set to null)
+PUT {{baseUrl}}/api/events/1
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "bannerImageUrl": null
+}
+
+###
+
+### Step 7: Create an Event WITHOUT banner image (backward compatibility)
+POST {{baseUrl}}/api/events
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "title": "Tech Conference 2025",
+  "description": "Annual technology conference",
+  "organizerName": "Tech Events Ltd",
+  "eventTime": "2025-09-20T09:00:00Z",
+  "locationName": "Convention Center, San Francisco",
+  "locationLat": 37.7749,
+  "locationLon": -122.4194,
+  "categoryId": 2
+}
+
+###
+
+### Step 8: Get event without banner - should return null for bannerImageUrl
+GET {{baseUrl}}/api/events/2
+Accept: application/json
+
+###

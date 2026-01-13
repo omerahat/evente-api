@@ -11,6 +11,11 @@ public class Event
     public decimal? LocationLat { get; set; }
     public decimal? LocationLon { get; set; }
     
+    /// <summary>
+    /// Optional banner image URL for the event (max 500 characters)
+    /// </summary>
+    public string? BannerImageUrl { get; set; }
+    
     public int? CategoryId { get; set; }
     public Category? Category { get; set; }
 
