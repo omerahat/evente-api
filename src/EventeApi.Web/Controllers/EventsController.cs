@@ -50,6 +50,9 @@ public class EventsController : Controller
     {
         try
         {
+            var apiBaseUrl = HttpContext.RequestServices.GetRequiredService<IConfiguration>()["ApiBaseUrl"] ?? "http://localhost:5200";
+            ViewBag.ApiBaseUrl = apiBaseUrl;
+            
             var response = await _backendApi.GetEventByIdAsync(id);
 
             if (response.IsSuccessStatusCode && response.Content != null)

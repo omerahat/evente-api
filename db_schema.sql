@@ -37,6 +37,7 @@ CREATE TABLE "Events" (
   "location_name" varchar(255) NOT NULL,
   "location_lat" decimal(10,8),
   "location_lon" decimal(11,8),
+  "banner_image_url" varchar(500),
   "category_id" int,
   "created_by_admin_id" int,
   "created_at" timestamp DEFAULT (CURRENT_TIMESTAMP)

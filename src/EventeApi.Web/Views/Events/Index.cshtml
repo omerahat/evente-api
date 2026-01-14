@@ -21,7 +21,7 @@
                     <thead class="table-light">
                         <tr>
                             <th>ID</th>
-                            <th style="width: 80px;">Banner</th>
+                            <th style="width: 120px;">Has Banner</th>
                             <th>Title</th>
                             <th>Organizer</th>
                             <th>Event Time</th>
@@ -39,11 +39,11 @@
                                 <td>
                                     @if (!string.IsNullOrEmpty(evt.BannerImageUrl))
                                     {
-                                        <img src="@evt.BannerImageUrl" alt="Banner" class="img-thumbnail" style="max-width: 60px; max-height: 40px; object-fit: cover;" />
+                                        <span class="badge bg-success">Yes</span>
                                     }
                                     else
                                     {
-                                        <span class="text-muted small"><i class="bi bi-image"></i></span>
+                                        <span class="badge bg-secondary">No</span>
                                     }
                                 </td>
                                 <td>@evt.Title</td>
