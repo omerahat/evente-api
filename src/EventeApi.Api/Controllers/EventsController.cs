@@ -18,8 +18,14 @@ public class EventsController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<EventDto>>> GetAll()
+    public async Task<ActionResult<IEnumerable<EventDto>>> GetAll([FromQuery] int? categoryId = null)
     {
+        if (categoryId.HasValue)
+        {
+            var filteredEvents = await _eventService.GetEventsByCategoryAsync(categoryId.Value);
+            return Ok(filteredEvents);
+        }
+        
         var events = await _eventService.GetAllEventsAsync();
         return Ok(events);
     }
