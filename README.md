@@ -52,6 +52,10 @@ EventeApi/
 - ✅ **Review System** - 5-star ratings with comments
 - ✅ **Gamification** - Badge system for user achievements
 - ✅ **Geolocation** - Latitude/Longitude support for maps
+- ✅ **Image Upload** - Upload event banner images (single or batch)
+- ✅ **Banner Images** - Support for event banner images with URL storage
+- ✅ **Categories** - Event categorization system
+- ✅ **Image Management** - Delete uploaded images
 
 ### 💻 Admin Panel (Website)
 - ✅ **Dashboard** - Real-time metrics (Total Users, Events, Reviews)
@@ -148,11 +152,13 @@ When the API is running, navigate to:
 | POST | `/api/auth/register` | Register new user | Public |
 | POST | `/api/auth/login` | Login and get token | Public |
 | **Events** |
-| GET | `/api/events` | Get all events | Public |
+| GET | `/api/events` | Get all events (optional: `?categoryId={id}`) | Public |
 | GET | `/api/events/{id}` | Get event by ID | Public |
 | POST | `/api/events` | Create event | Admin |
 | PUT | `/api/events/{id}` | Update event | Admin |
 | DELETE | `/api/events/{id}` | Delete event | Admin |
+| **Categories** |
+| GET | `/api/categories` | Get all categories | Public |
 | **Registrations** |
 | POST | `/api/registrations/{eventId}` | Register for event | User |
 | DELETE | `/api/registrations/{eventId}` | Cancel registration | User |
@@ -165,7 +171,105 @@ When the API is running, navigate to:
 | GET | `/api/admin/users` | List all users | Admin |
 | POST | `/api/admin/users/{id}/ban` | Ban user | Admin |
 | POST | `/api/admin/users/{id}/unban` | Unban user | Admin |
+| GET | `/api/admin/badges` | Get all badges | Admin |
+| POST | `/api/admin/badges` | Create badge | Admin |
 | POST | `/api/admin/badges/assign` | Assign badge to user | Admin |
+| POST | `/api/admin/upload/event-image` | Upload single event image | Admin |
+| POST | `/api/admin/upload/event-images` | Upload multiple event images (batch) | Admin |
+| DELETE | `/api/admin/upload/image?imageUrl={url}` | Delete uploaded image | Admin |
+
+## 🖼️ Image Upload System
+
+The API supports uploading images for events with comprehensive validation and management.
+
+### Supported Formats
+- **File Types**: JPG, JPEG, PNG, GIF, WebP
+- **Max File Size**: 5MB per image
+- **Batch Upload**: Up to 25MB total for multiple images
+- **Storage**: Images are stored in `wwwroot/uploads/events/` directory
+
+### Image Upload Endpoints
+
+#### Upload Single Image
+```http
+POST /api/admin/upload/event-image
+Content-Type: multipart/form-data
+Authorization: Bearer {token}
+
+file: [image file]
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "url": "/uploads/events/abc123def456.jpg",
+  "fileName": "abc123def456.jpg",
+  "fileSize": 245678,
+  "errorMessage": null
+}
+```
+
+#### Upload Multiple Images (Batch)
+```http
+POST /api/admin/upload/event-images
+Content-Type: multipart/form-data
+Authorization: Bearer {token}
+
+files: [image1, image2, image3, ...]
+```
+
+**Response:**
+```json
+[
+  {
+    "success": true,
+    "url": "/uploads/events/abc123.jpg",
+    "fileName": "abc123.jpg",
+    "fileSize": 123456
+  },
+  {
+    "success": false,
+    "url": null,
+    "fileName": "invalid.exe",
+    "fileSize": 0,
+    "errorMessage": "Invalid file type. Only JPG, PNG, GIF, WebP are allowed."
+  }
+]
+```
+
+#### Delete Image
+```http
+DELETE /api/admin/upload/image?imageUrl=/uploads/events/abc123.jpg
+Authorization: Bearer {token}
+```
+
+### Using Banner Images in Events
+
+When creating or updating an event, you can include a `bannerImageUrl`:
+
+```json
+{
+  "title": "Tech Conference 2024",
+  "description": "Annual technology conference",
+  "organizerName": "Tech Events Inc.",
+  "eventTime": "2024-06-15T10:00:00Z",
+  "locationName": "Convention Center",
+  "locationLat": 40.7128,
+  "locationLon": -74.0060,
+  "categoryId": 1,
+  "bannerImageUrl": "/uploads/events/abc123def456.jpg"
+}
+```
+
+### Image Validation
+
+The system validates:
+- **File extension** matches allowed types
+- **MIME type** matches file content
+- **File signature** (magic bytes) to prevent spoofing
+- **File size** within limits
+- **Secure filename** generation to prevent path traversal
 
 ## 🧪 Testing with Postman
 
@@ -180,6 +284,13 @@ When the API is running, navigate to:
    - Run the Login request
    - Copy the token
    - Set it at Collection level (Authorization tab)
+
+4. Test Image Upload:
+   - Use the `POST /api/admin/upload/event-image` endpoint
+   - Select "form-data" body type
+   - Add key `file` with type "File"
+   - Choose an image file
+   - Send request
 
 ## 📱 Client Integration
 
@@ -213,15 +324,48 @@ class ApiService {
   }
 
   // Get all events
-  Future<List<dynamic>> getEvents() async {
+  Future<List<dynamic>> getEvents({int? categoryId}) async {
+    var uri = Uri.parse('$baseUrl/api/events');
+    if (categoryId != null) {
+      uri = uri.replace(queryParameters: {'categoryId': categoryId.toString()});
+    }
     final response = await http.get(
-      Uri.parse('$baseUrl/api/events'),
+      uri,
       headers: {'Authorization': 'Bearer $_token'},
     );
     if (response.statusCode == 200) {
       return jsonDecode(response.body);
     }
     throw Exception('Failed to load events');
+  }
+
+  // Get all categories
+  Future<List<dynamic>> getCategories() async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/api/categories'),
+    );
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    }
+    throw Exception('Failed to load categories');
+  }
+
+  // Upload event image
+  Future<Map<String, dynamic>> uploadEventImage(String imagePath) async {
+    var request = http.MultipartRequest(
+      'POST',
+      Uri.parse('$baseUrl/api/admin/upload/event-image'),
+    );
+    request.headers['Authorization'] = 'Bearer $_token';
+    request.files.add(await http.MultipartFile.fromPath('file', imagePath));
+    
+    final streamedResponse = await request.send();
+    final response = await http.Response.fromStream(streamedResponse);
+    
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    }
+    throw Exception('Failed to upload image');
   }
 
   // Register for an event - eventId goes in URL path, NOT in body
@@ -307,8 +451,15 @@ class ApiService {
     setToken(response.data['token']);
   }
 
-  Future<List<dynamic>> getEvents() async {
-    final response = await _dio.get('/api/events');
+  Future<List<dynamic>> getEvents({int? categoryId}) async {
+    final response = await _dio.get('/api/events', queryParameters: 
+      categoryId != null ? {'categoryId': categoryId} : null
+    );
+    return response.data;
+  }
+
+  Future<List<dynamic>> getCategories() async {
+    final response = await _dio.get('/api/categories');
     return response.data;
   }
 
@@ -316,6 +467,44 @@ class ApiService {
   Future<void> registerForEvent(int eventId) async {
     await _dio.post('/api/registrations/$eventId');  // ✅ Correct
     // ❌ Wrong: await _dio.post('/api/registrations', data: {'eventId': eventId});
+  }
+
+  // Upload event image
+  Future<Map<String, dynamic>> uploadEventImage(String imagePath) async {
+    final formData = FormData.fromMap({
+      'file': await MultipartFile.fromFile(imagePath),
+    });
+    final response = await _dio.post(
+      '/api/admin/upload/event-image',
+      data: formData,
+    );
+    return response.data;
+  }
+
+  // Create event with banner image
+  Future<Map<String, dynamic>> createEvent({
+    required String title,
+    required String description,
+    required String organizerName,
+    required DateTime eventTime,
+    required String locationName,
+    required int categoryId,
+    double? locationLat,
+    double? locationLon,
+    String? bannerImageUrl,
+  }) async {
+    final response = await _dio.post('/api/events', data: {
+      'title': title,
+      'description': description,
+      'organizerName': organizerName,
+      'eventTime': eventTime.toIso8601String(),
+      'locationName': locationName,
+      'locationLat': locationLat,
+      'locationLon': locationLon,
+      'categoryId': categoryId,
+      'bannerImageUrl': bannerImageUrl,
+    });
+    return response.data;
   }
 }
 ```
@@ -326,16 +515,28 @@ class ApiService {
 ```json
 {
   "ConnectionStrings": {
-    "DefaultConnection": "Host=localhost;Port=5432;Database=evente_db;..."
+    "DefaultConnection": "Host=localhost;Port=5432;Database=evente_db;Username=postgres;Password=postgres"
   },
   "Jwt": {
     "Key": "your-secret-key-min-32-chars",
     "Issuer": "EventeApi",
     "Audience": "EventeApiUser",
     "ExpiryMinutes": "60"
+  },
+  "ImageUpload": {
+    "MaxFileSizeBytes": 5242880,
+    "UploadPath": "wwwroot/uploads",
+    "AllowedExtensions": [".jpg", ".jpeg", ".png", ".gif", ".webp"],
+    "AllowedMimeTypes": ["image/jpeg", "image/png", "image/gif", "image/webp"]
   }
 }
 ```
+
+**ImageUpload Configuration:**
+- `MaxFileSizeBytes`: Maximum file size in bytes (default: 5MB = 5242880 bytes)
+- `UploadPath`: Directory where uploaded images are stored (relative to API project root)
+- `AllowedExtensions`: List of allowed file extensions
+- `AllowedMimeTypes`: List of allowed MIME types for validation
 
 ### Web Configuration (`appsettings.json`)
 Ensure the Web App knows where the API is running:
